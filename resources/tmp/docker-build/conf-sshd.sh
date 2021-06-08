@@ -8,13 +8,15 @@ if [[ "${DEBUG}" == "true" ]]; then
 fi
 
 log() {
-    LEVEL="${1}"
-    TO_LOG="${2}"
+    zparseopts -A zlogopts -level:: -
 
-    WHITE='\033[1;37m'
-    YELLOW='\033[1;33m'
-    RED='\033[1;31m'
-    NO_COLOR='\033[0m'
+    local LEVEL=${zlogopts[--level]:-info}
+    local TO_LOG=${zlogopts[--to-log]::-}
+
+    local WHITE='\033[1;37m'
+    local YELLOW='\033[1;33m'
+    local RED='\033[1;31m'
+    local NO_COLOR='\033[0m'
 
     if [[ "${LEVEL}" == "warning" ]]; then
         LOG_LEVEL="${YELLOW}WARN${NO_COLOR}"
@@ -23,7 +25,7 @@ log() {
     else
         LOG_LEVEL="${WHITE}INFO${NO_COLOR}"
         if [[ -z "${TO_LOG}" ]]; then
-            TO_LOG="${1}"
+            return;
         fi
     fi
 

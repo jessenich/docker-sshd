@@ -474,3 +474,4 @@ zsdoc/data
 !**/authorized_keys.d/.gitkeep
 !build/**
 
+!**/tmp/**

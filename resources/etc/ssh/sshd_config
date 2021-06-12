@@ -37,9 +37,9 @@ AuthorizedKeysFile                      /etc/ssh/authorized_keys /etc/ssh/author
 ClientAliveCountMax                     5
 ClientAliveInterval                     5
 FingerprintHash                         sha256
-HostKey                                 /etc/ssh/ssh_host_ecdsa_key
-HostKey                                 /etc/ssh/ssh_host_ed25519_key
-HostKey                                 /etc/ssh/ssh_host_rsa_key
+HostKey                                 /etc/ssh/keys/ssh_host_ecdsa_key
+HostKey                                 /etc/ssh/keys/ssh_host_ed25519_key
+HostKey                                 /etc/ssh/keys/ssh_host_rsa_key
 LogLevel                                DEBUG1
 LoginGraceTime                          15m
 

@@ -40,15 +40,17 @@ FingerprintHash                         sha256
 HostKey                                 /etc/ssh/ssh_host_ecdsa_key
 HostKey                                 /etc/ssh/ssh_host_ed25519_key
 HostKey                                 /etc/ssh/ssh_host_rsa_key
-LogLevel                                DEBUG1
+LogLevel                                INFO
 LoginGraceTime                          15m
 
 MaxAuthTries                            6
 MaxSessions                             10
-PasswordAuthentication 	                yes
+PasswordAuthentication 	                no
+PermitEmptyPasswords                    no
 PermitTTY                               yes
 PermitUserEnvironment                   yes
 PubkeyAuthentication                    yes
+PermitTunnel                            yes
 Subsystem                               sftp                /usr/libexec/sftp-server
 SyslogFacility 		                    DAEMON
 X11Forwarding 		                    yes

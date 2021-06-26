@@ -477,3 +477,4 @@ zsdoc/data
 !build/**
 
 !**/tmp/**
+out/**

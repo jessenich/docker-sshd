@@ -26,3 +26,6 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 README.md
+resources/docker-build/deprecated/**
+out/**
+LICENSE

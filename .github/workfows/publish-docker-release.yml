@@ -2,11 +2,11 @@ name: "Publish alpine-sshd Docker Image"
 
 on:
   workflow_dispatch:
+  release:
+    types: [published]
     
 jobs:
   build-docker-image:
-    env:
-      ALPINE_ZSH_VARIANT: glibc-latest
     runs-on: "ubuntu-latest"
 
     steps:

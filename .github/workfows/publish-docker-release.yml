@@ -2,11 +2,11 @@ name: "Publish alpine-sshd Docker Image"
 
 on:
   workflow_dispatch:
+  release:
+    types: [published]
     
 jobs:
   build-docker-image:
-    env:
-      ALPINE_ZSH_VARIANT: glibc-latest
     runs-on: "ubuntu-latest"
 
     steps:
@@ -49,7 +49,9 @@ jobs:
           pull: true
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:next
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:glibc-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:glibc-${{ steps.semver.outputs.non-prefixed }}
+
 
       - name: Build & Push Dev Latest
         uses: docker/build-push-action@v2
@@ -70,4 +72,5 @@ jobs:
           pull: true
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:glibc-next
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:${{ steps.semver.outputs.non-prefixed }}

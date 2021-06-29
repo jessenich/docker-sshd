@@ -15,4 +15,8 @@ chown-path
 # configure and exec cron deamon
 crontab -u $EUSER $CROND_CRONTAB
 
-crond $CROND_PARAMS
+
+
+
+
+ $CROND_PARAMS

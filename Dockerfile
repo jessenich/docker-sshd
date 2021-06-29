@@ -1,7 +1,7 @@
 ARG BASE_IMAGE= \
     BASE_IMAGE_TAG=
-
-FROM ${BASE_IMAGE:-jessenich91/alpine-zsh}:"${BASE_IMAGE_TAG:-glibc-latest}" as sshd
+    
+FROM ${BASE_IMAGE:-jessenich91/alpine-zsh}:"${BASE_IMAGE_TAG:-latest}" as build
 
 ARG SSH_USER= \
     SSH_USER_SHELL= 
@@ -49,6 +49,8 @@ COPY --from=build "/etc/ssh/ssh_host_ecdsa_key.pub"   "/host_keys/ssh_host_ecdsa
 
 FROM build as final
 
+COPY entrypoint.sh /entrypoint.sh
+
 EXPOSE 22
 
-ENTRYPOINT [ "/usr/sbin/sshd" "-D" "-e" "$@" ]
+ENTRYPOINT [ "/entrypoint.sh" ]

@@ -1,0 +1,1 @@
+[![Publish alpine-sshd Docker Image](https://github.com/jessenich/docker-alpine-sshd/actions/workflows/publish-docker-release.yml/badge.svg)](https://github.com/jessenich/docker-alpine-sshd/actions/workflows/publish-docker-release.yml)

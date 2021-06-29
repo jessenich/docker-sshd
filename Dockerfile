@@ -16,9 +16,8 @@ RUN apk update && \
 COPY resources/etc/ssh/ /etc/ssh/
 COPY resources/tmp/docker-build /tmp/docker-build
 
-RUN chmod +x root conf-ssh.sh && \
-    chmod +x root conf-ssh-user.sh && \
-    chmod +x "${SSH_USER}" conf-ssh-user.sh && \
+RUN chmod +x /tmp/docker-build/conf-ssh.sh && \
+    chmod +x /tmp/docker-build/conf-ssh-user.sh && \
     /tmp/docker-build/conf-ssh.sh && \
     /tmp/docker-build/conf-ssh-user.sh --username "root" --user-shell "/bin/zsh" && \
     /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}" 

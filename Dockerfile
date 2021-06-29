@@ -1,7 +1,7 @@
 ARG BASE_IMAGE= \
     BASE_IMAGE_TAG=
 
-FROM ${BASE_IMAGE:-jessenich91/alpine-zsh}:"${BASE_IMAGE_TAG:-glibc-latest}" as build
+FROM ${BASE_IMAGE:-jessenich91/alpine-zsh}:"${BASE_IMAGE_TAG:-glibc-latest}" as sshd
 
 ARG SSH_USER= \
     SSH_USER_SHELL= 
@@ -16,9 +16,12 @@ RUN apk update && \
 COPY resources/etc/ssh/ /etc/ssh/
 COPY resources/tmp/docker-build /tmp/docker-build
 
-RUN /tmp/docker-build/conf-ssh.sh
-RUN /tmp/docker-build/conf-ssh-user.sh --username root
-RUN /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}" 
+RUN chmod +x root conf-ssh.sh && \
+    chmod +x root conf-ssh-user.sh && \
+    chmod +x "${SSH_USER}" conf-ssh-user.sh && \
+    /tmp/docker-build/conf-ssh.sh && \
+    /tmp/docker-build/conf-ssh-user.sh --username "root" --user-shell "/bin/zsh" && \
+    /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}" 
 
 FROM scratch as artifact
 ARG SSH_USER=
@@ -47,4 +50,5 @@ COPY --from=build "/etc/ssh/ssh_host_ecdsa_key.pub"   "/host_keys/ssh_host_ecdsa
 FROM build as final
 
 EXPOSE 22
-CMD /usr/sbin/sshd -D -e "$@"
+
+ENTRYPOINT [ "/usr/sbin/sshd" "-D" "-e" "$@" ]

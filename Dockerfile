@@ -1,15 +1,22 @@
 ARG BASE_IMAGE= \
     BASE_IMAGE_TAG=
     
-FROM ${BASE_IMAGE:-jessenich91/alpine-zsh}:"${BASE_IMAGE_TAG:-latest}" as build
+FROM "${BASE_IMAGE:-jessenich91/alpine-zsh}":"${BASE_IMAGE_TAG:-latest}" as conf
 
 ARG SSH_USER= \
     SSH_USER_SHELL= 
 
-ENV SSH_USER="${SSH_USER:-sshuser}" \
-    SSH_USER_SHELL="${SSH_USER_SHELL:-/bin/zsh}"
+ENV BASE_IMAGE="${BASE_IMAGE}" \
+    BASE_IMAGE_TAG="${BASE_IMAGE_TAG}" \
+    SSH_USER="${SSH_USER:-sshuser}" \
+    SSH_USER_SHELL="${SSH_USER_SHELL:-/bin/zsh}" \
+    RUNNING_IN_DOCKER="true"
 
-RUN apk update && \
+RUN if [ ! +x "${SSH_USER_SHELL}" ]; \
+    then \
+        SSH_USER_SHELL="/bin/ash"; \
+    fi \
+    apk update && \
     apk add openssh && \
     rm -rf /var/cache/apk/*
 
@@ -46,10 +53,9 @@ COPY --from=build "/etc/ssh/ssh_host_rsa_key.pub"     "/host_keys/ssh_host_rsa_k
 COPY --from=build "/etc/ssh/ssh_host_ecdsa_key"       "/host_keys/ssh_host_ecdsa_key"
 COPY --from=build "/etc/ssh/ssh_host_ecdsa_key.pub"   "/host_keys/ssh_host_ecdsa_key.pub"
 
-FROM build as final
+FROM conf as final
 
-COPY entrypoint.sh /entrypoint.sh
-
+WORKDIR /root
+COPY entrypoint.sh entrypoint.sh
 EXPOSE 22
-
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT /root/entrypoint.sh

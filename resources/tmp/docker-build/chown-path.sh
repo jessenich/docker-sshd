@@ -1,17 +1,20 @@
 #!/bin/sh
 
-if [ ! -z "$ECHOWNDIRS" ]; then
+# Copyright (c) 2021 Jesse N. <jesse@keplerdev.com>
+# This work is licensed under the terms of the MIT license. For a copy, see <https://opensource.org/licenses/MIT>.
+
+if [ -n "$ECHOWNDIRS" ]; then
    if [ ! -d "$ECHOWNDIRS" ]; then
-      mkdir -p $ECHOWNDIRS
+      mkdir -p "$ECHOWNDIRS"
    fi
 
-   chown $EUSER:$EGROUP $ECHOWNDIRS
+   chown "$EUSER":"$EGROUP" "$ECHOWNDIRS"
 fi
 
-if [ ! -z "$ECHOWNFILES" ]; then
+if [ -n "$ECHOWNFILES" ]; then
    if [ ! -f "$ECHOWNFILES" ]; then
-      touch $ECHOWNFILES
+      touch "$ECHOWNFILES"
    fi
 
-   chown $EUSER:$EGROUP $ECHOWNFILES
+   chown "$EUSER":"$EGROUP" "$ECHOWNFILES"
 fi

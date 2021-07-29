@@ -1,3 +1,6 @@
+# Copyright (c) 2021 Jesse N. <jesse@keplerdev.com>
+# This work is licensed under the terms of the MIT license. For a copy, see <https://opensource.org/licenses/MIT>.
+
 name: "Publish alpine-sshd Docker Image"
 
 on:
@@ -7,8 +10,6 @@ on:
     
 jobs:
   build-docker-image:
-    env:
-      ALPINE_ZSH_VARIANT: glibc-latest
     runs-on: "ubuntu-latest"
 
     steps:
@@ -44,8 +45,6 @@ jobs:
           context: .
           file: ./Dockerfile
           target: final
-          # cache-to: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:cache, type=local, dest=/tmp/.buildx-cache
-          # cache-from: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:cache, type=local, dest=/tmp/.buildx-cache
           labels: |
             "com.keplerdev.alpine-sshd.maintainer: Jesse Nicholson <jesse@keplerdev.com>"
             "com.keplerdev.alpine-sshd.source-sha": ${{ github.sha }}

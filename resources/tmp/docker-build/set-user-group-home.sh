@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# Copyright (c) 2021 Jesse N. <jesse@keplerdev.com>
+# This work is licensed under the terms of the MIT license. For a copy, see <https://opensource.org/licenses/MIT>.
+
 # The goal of this script is to allow mapping of host user (the one running
 # docker), to the desired container user, as to enable the use of more
 # restrictive file permission (700 or 600)

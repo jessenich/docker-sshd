@@ -1,30 +1,44 @@
-#!/usr/bin/env zsh
+#!/bin/sh
+
+# Copyright (c) 2021 Jesse N. <jesse@keplerdev.com>
+# This work is licensed under the terms of the MIT license. For a copy, see <https://opensource.org/licenses/MIT>.
 
 set -e
 
 # enable debug mode if desired
-if [[ "${DEBUG}" == "true" ]]; then 
+if [ "${DEBUG}" = "true" ]; then 
     set -x
 fi
 
 log() {
-    zparseopts -A zlogopts -level:: -
+    LOG_LEVEL=info
+    LOG_MSG=""
+    WHITE='\033[1;37m'
+    YELLOW='\033[1;33m'
+    RED='\033[1;31m'
+    NO_COLOR='\033[0m'
 
-    local LEVEL=${zlogopts[--level]:-info}
-    local TO_LOG=${zlogopts[--to-log]::-}
+    while "#$" -gt 0; do
+        case "$1" in
+            -l | --level)
+                LOG_LEVEL="$2";
+            ;;
 
-    local WHITE='\033[1;37m'
-    local YELLOW='\033[1;33m'
-    local RED='\033[1;31m'
-    local NO_COLOR='\033[0m'
+            *)
+                LOG_MSG="$2"
+        esac
+        shift
+    done
 
-    if [[ "${LEVEL}" == "warning" ]]; then
+    
+
+    if [ "${LEVEL}" = "warning" ]; then
         LOG_LEVEL="${YELLOW}WARN${NO_COLOR}"
-    elif [[ "${LEVEL}" == "error" ]]; then
+    elif [ "${LEVEL}" = "error" ]; then
         LOG_LEVEL="${RED}ERROR${NO_COLOR}"
     else
         LOG_LEVEL="${WHITE}INFO${NO_COLOR}"
-        if [[ -z "${TO_LOG}" ]]; then
+        if [ -z "${TO_LOG}" ]; then
             return;
         fi
     fi
@@ -47,20 +61,20 @@ generate_passwd() {
 }
 
 # ensure backward comaptibility for earlier versions of this image
-if [[ -n "${KEYPAIR_LOGIN}" ]] && [[ "${KEYPAIR_LOGIN}" == "true" ]]; then
+if [ -n "${KEYPAIR_LOGIN}" ] && [ "${KEYPAIR_LOGIN}" = "true" ]; then
     ROOT_KEYPAIR_LOGIN_ENABLED="${KEYPAIR_LOGIN}"
 fi
-if [[ -n "${ROOT_PASSWORD}" ]]; then
+if [ -n "${ROOT_PASSWORD}" ]; then
     ROOT_LOGIN_UNLOCKED="true"
 fi
 
 # enable root login if keypair login is enabled
-if [[ "${ROOT_KEYPAIR_LOGIN_ENABLED}" == "true" ]]; then
+if [ "${ROOT_KEYPAIR_LOGIN_ENABLED}" = "true" ]; then
     ROOT_LOGIN_UNLOCKED="true"
 fi
 
 # initiate default sshd-config if there is none available
-if [[ ! "$(ls -A /etc/ssh)" ]]; then
+if [ ! "$(ls -A /etc/ssh)" ]; then
     cp -a "${CACHED_SSH_DIRECTORY}"/* /etc/ssh/.
 fi
 rm -rf "${CACHED_SSH_DIRECTORY}"
@@ -70,20 +84,20 @@ ssh-keygen -A 1>/dev/null
 
 log "Applying configuration for 'root' user ..."
 
-if [[ "${ROOT_LOGIN_UNLOCKED}" == "true" ]] ; then
+if [ "${ROOT_LOGIN_UNLOCKED}" = "true" ] ; then
 
     # generate random root password
-    if [[ -z "${ROOT_PASSWORD}" ]]; then
+    if [ -z "${ROOT_PASSWORD}" ]; then
         log "    generating random password for user 'root'"
         ROOT_PASSWORD="$(generate_passwd)"
     fi
 
-    echo "root:${ROOT_PASSWORD}" | chpasswd &>/dev/null
+    echo "root:${ROOT_PASSWORD}" | chpasswd 2>&1
     log "    password for user 'root' set"
     log "warning" "    user 'root' is now UNLOCKED"
 
     # set root login mode by password or keypair
-    if [[ "${ROOT_KEYPAIR_LOGIN_ENABLED}" == "true" ]] && [[ -f "${HOME}/.ssh/authorized_keys" ]]; then
+    if [ "${ROOT_KEYPAIR_LOGIN_ENABLED}" = "true" ] && [ -f "${HOME}/.ssh/authorized_keys" ]; then
         sed -i "s/#PermitRootLogin.*/PermitRootLogin without-password/" /etc/ssh/sshd_config
         sed -i "s/#PasswordAuthentication.*/PasswordAuthentication no/" /etc/ssh/sshd_config
         ensure_mod "${HOME}/.ssh/authorized_keys" "0600" "root" "root"
@@ -105,7 +119,7 @@ printf "\n"
 
 log "Applying configuration for additional users ..."
 
-if [[ ! -x "${USER_LOGIN_SHELL}" ]]; then
+if [ ! -x "${USER_LOGIN_SHELL}" ]; then
     log "error" "    can not allocate desired shell '${USER_LOGIN_SHELL}', falling back to '${USER_LOGIN_SHELL_FALLBACK}' ..."
     USER_LOGIN_SHELL="${USER_LOGIN_SHELL_FALLBACK}"
 fi
@@ -113,7 +127,7 @@ fi
 log "    desired shell is ${USER_LOGIN_SHELL}"
 
 
-if [[ -n "${SSH_USERS}" ]]; then
+if [ -n "${SSH_USERS}" ]; then
 
     IFS=","
     for USER in ${SSH_USERS}; do
@@ -124,33 +138,33 @@ if [[ -n "${SSH_USERS}" ]]; then
         USER_UID="$(echo "${USER}" | cut -d ':' -f 2)"
         USER_GID="$(echo "${USER}" | cut -d ':' -f 3)"
 
-        if [[ -z "${USER_NAME}" ]] || [[ -z "${USER_UID}" ]] || [[ -z "${USER_GID}" ]]; then
+        if [ -z "${USER_NAME}" ] || [ -z "${USER_UID}" ] || [ -z "${USER_GID}" ]; then
             log "error" "        skipping invalid data '${USER_NAME}' - UID: '${USER_UID}' GID: '${USER_GID}'"
             continue
         fi
 
         USER_GROUP="${USER_NAME}"
-        if getent group "${USER_GID}" &>/dev/null ; then 
+        if getent group "${USER_GID}" 2>&1 ; then 
             USER_GROUP="$(getent group "${USER_GID}" | cut -d ':' -f 1)"
             log "warning" "        desired GID is already present in system. Using the present group-name - GID: '${USER_GID}' GNAME: '${USER_GROUP}'"
         else
             addgroup -g "${USER_GID}" "${USER_GROUP}"
         fi
 
-        if getent passwd "${USER_NAME}" &>/dev/null ; then
+        if getent passwd "${USER_NAME}" 2>&1 ; then
             log "warning" "        desired USER_NAME is already present in system. Skipping creation - USER_NAME: '${USER_NAME}'"
         else
             adduser -s "${USER_LOGIN_SHELL}" -D -u "${USER_UID}" -G "${USER_GROUP}" "${USER_NAME}"
             log "        user '${USER_NAME}' created - UID: '${USER_UID}' GID: '${USER_GID}' GNAME: '${USER_GROUP}'"
         fi
 
-        passwd -u "${USER_NAME}" &>/dev/null || true
+        passwd -u "${USER_NAME}" 2>&1 || true
         mkdir -p "/home/${USER_NAME}/.ssh"
 
         MOUNTED_AUTHORIZED_KEYS="${AUTHORIZED_KEYS_VOLUME}/${USER_NAME}"
         LOCAL_AUTHORIZED_KEYS="/home/${USER_NAME}/.ssh/authorized_keys"
 
-        if [[ ! -e "${MOUNTED_AUTHORIZED_KEYS}" ]]; then
+        if [ ! -e "${MOUNTED_AUTHORIZED_KEYS}" ]; then
             log "warning" "        no SSH authorized_keys found for user '${USER_NAME}'"
         else
             cp "${MOUNTED_AUTHORIZED_KEYS}" "${LOCAL_AUTHORIZED_KEYS}"
@@ -165,9 +179,7 @@ if [[ -n "${SSH_USERS}" ]]; then
     unset IFS
 
 else
-
     log "    no additional SSH-users set"
-
 fi
 
 echo ""

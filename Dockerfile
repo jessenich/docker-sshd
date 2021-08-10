@@ -28,7 +28,7 @@ RUN chmod +x /tmp/docker-build/conf-ssh.sh && \
     /tmp/docker-build/conf-ssh-user.sh --username root && \
     /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}"
 
-FROM scratch as artifact
+FROM scratch as export_keys
 ARG SSH_USER=
 
 COPY --from=build "/home/${SSH_USER}/.ssh/id_ed25519"     "/user_keys/id_ed_25519"
@@ -52,7 +52,7 @@ COPY --from=build "/etc/ssh/ssh_host_rsa_key.pub"     "/host_keys/ssh_host_rsa_k
 COPY --from=build "/etc/ssh/ssh_host_ecdsa_key"       "/host_keys/ssh_host_ecdsa_key"
 COPY --from=build "/etc/ssh/ssh_host_ecdsa_key.pub"   "/host_keys/ssh_host_ecdsa_key.pub"
 
-FROM conf as final
+FROM build as sshd
 
 WORKDIR /root
 COPY entrypoint.sh entrypoint.sh

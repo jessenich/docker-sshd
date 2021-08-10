@@ -8,6 +8,11 @@ on:
 
 env:
   GHCR_REGISTRY: ghcr.io
+  BUILD_ARGS: |
+    BASE_IMAGE=jessenich91/alpine-zsh
+    VARIANT=latest
+    SSH_USER=jessenich
+    SSH_USER_SHELL="/bin/zsh"
 
 jobs:
   build-docker-image:
@@ -61,39 +66,32 @@ jobs:
             "${{ env.GHCR_REGISTRY }}/${{ github.repository }}"
           tags: type=semver,pattern={{version}}
 
-      - name: Build & Push Dev Latest
+      - name: Build & Push Latest
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile
-          target: final
+          target: sshd
           labels: ${{ env.LABELS }}
-
-          build-args: |
-            BASE_IMAGE=jessenich91/alpine-zsh
-            BASE_IMAGE_TAG=latest
-            SSH_USER=jessenich
-            SSH_USER_SHELL="/bin/zsh"
+          cache-to: "type=local,src=$(PWD)/cache"
+          platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
+          build-args: ${{ env.BUILD_ARGS }}
           pull: true
           push: true
           tags: ${{ steps.meta.outputs.tags }}
 
 
-      - name: Build & Push Dev Latest
+      - name: Extract SSH Keys to Local Directory
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile
-          target: artifact
+          target: export_keys
           cache-from: "type=local,src=$(PWD)/cache"
           platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
-          build-args: |
-            ${{ env.COMMON_ARGS }}
-            BASE_IMAGE_TAG=latest
-            SSH_USER=jessenich
-            SSH_USER_SHELL="/bin/zsh"
+          build-args: ${{ env.BUILD_ARGS }}
           outputs: "type=local,dest=$(PWD)/out/"
-          pull: true
+          pull: false
           push: false
 
       - run: ls /var/cache/docker/docker-alpine-sshd_artifact

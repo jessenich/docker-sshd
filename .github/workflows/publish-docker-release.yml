@@ -2,11 +2,15 @@ name: "Publish alpine-sshd Docker Image"
 
 on:
   release:
+<<<<<<< HEAD
+    types: [published]
+
+=======
     types: [published, edited, prerelease]
   push:
     tags:
       - v*
-      
+
 env:
   LABELS: |
     "maintainer: Jesse Nicholson <jesse@keplerdev.com>"
@@ -19,7 +23,8 @@ env:
     BASE_IMAGE=jessenich91/alpine-zsh
     SSH_USER=jessenich
     SSH_USER_SHELL="/bin/zsh"
-    
+
+>>>>>>> main
 jobs:
   build-docker-image:
     runs-on: "ubuntu-latest"
@@ -35,13 +40,13 @@ jobs:
             POSTFIX=echo "${REF//(refs\/tags\/(v([\d]*){1}.([\d]*){1}(.?)([\d]+)?))/REPLACE}" \
           fi \
           echo '::set-output name=TAG_POSTFIX::POSTFIX'
-    
+
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v1
-        
+
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -49,29 +54,43 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-      
+
       - name: Login to Dockerhub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            "${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}"
+            "ghcr.io/${{ github.repository }}"
+          tags: type=semver,pattern={{version}}
+
       - name: Build & Push Dev Latest
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile
           target: final
-          labels: ${{ env.LABELS }}
-            
+          cache-to: "type=local,dest=$(PWD)/cache"
+          labels: |
+            "com.keplerdev.alpine-sshd.maintainer: Jesse Nicholson <jesse@keplerdev.com>"
+            "com.keplerdev.alpine-sshd.source-sha": ${{ github.sha }}
+            "com.keplerdev.alpine-sshd.repository.github.url: https://github.com/${{ github.repository }}"
+            "com.keplerdev.alpine-sshd.repository.dockerhub.url: https://dockerhub.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}"
+          platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
           build-args: |
-            BASE_IMAGE_TAG=glibc-latest
-            ${{ env.COMMON_ARGS }}
+            BASE_IMAGE=jessenich91/alpine-zsh
+            BASE_IMAGE_TAG=latest
+            SSH_USER=jessenich
+            SSH_USER_SHELL="/bin/zsh"
           pull: true
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:glibc-latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:glibc-${{ steps.semver.outputs.non-prefixed }}
+          tags: ${{ steps.meta.outputs.tags }}
 
 
       - name: Build & Push Dev Latest
@@ -79,13 +98,20 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          target: final
-          labels: ${{ env.LABELS }}
+          target: artifact
+          cache-from: "type=local,src=$(PWD)/cache"
+          labels: |
+            "com.keplerdev.alpine-sshd.maintainer: Jesse Nicholson <jesse@keplerdev.com>"
+            "com.keplerdev.alpine-sshd.source-sha": ${{ github.sha }}
+            "com.keplerdev.alpine-sshd.repository.github.url: https://github.com/${{ github.repository }}"
+            "com.keplerdev.alpine-sshd.repository.dockerhub.url: https://dockerhub.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}"
           build-args: |
             ${{ env.COMMON_ARGS }}
             BASE_IMAGE_TAG=latest
+            SSH_USER=jessenich
+            SSH_USER_SHELL="/bin/zsh"
+          outputs: "type=local,dest=$(PWD)/out/"
           pull: true
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:${{ steps.semver.outputs.non-prefixed }}
+          push: false
+
+      - run: ls /var/cache/docker/docker-alpine-sshd_artifact

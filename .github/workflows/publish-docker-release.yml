@@ -45,7 +45,7 @@ jobs:
           context: .
           file: ./Dockerfile
           target: final
-          cache-to: "type=local,dest=/var/cache/docker/docker-alpine-sshd_build"
+          cache-to: "type=local,dest=$(PWD)/cache"
           labels: |
             "com.keplerdev.alpine-sshd.maintainer: Jesse Nicholson <jesse@keplerdev.com>"
             "com.keplerdev.alpine-sshd.source-sha": ${{ github.sha }}
@@ -68,7 +68,7 @@ jobs:
           context: .
           file: ./Dockerfile
           target: artifact
-          cache-from: "type=local,src=/var/cache/docker/docker-alpine-sshd_build"
+          cache-from: "type=local,src=$(PWD)/cache"
           labels: |
             "com.keplerdev.alpine-sshd.maintainer: Jesse Nicholson <jesse@keplerdev.com>"
             "com.keplerdev.alpine-sshd.source-sha": ${{ github.sha }}
@@ -79,7 +79,7 @@ jobs:
             BASE_IMAGE_TAG=latest
             SSH_USER=jessenich
             SSH_USER_SHELL="/bin/zsh"
-          outputs: "type=local,dest=/var/cache/docker/docker-alpine-sshd_artifacts"
+          outputs: "type=local,dest=$(PWD)/out/"
           pull: true
           push: false
           tags: ${{ steps.meta.outputs.tags }}

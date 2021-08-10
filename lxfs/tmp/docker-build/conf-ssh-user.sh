@@ -18,32 +18,32 @@ show_usage() {
 }
 
 run() {
-    if [ "${user}" != "root" ]; 
+    if [ "${user}" != "root" ];
     then
         # If not using zsh, bash, or fish alpine variant, fallback to built-in ash shell
-        if [ ! -x "${user_shell}" ]; 
-        then 
+        if [ ! -x "${user_shell}" ];
+        then
             echo "'${user_shell} not found. Using fallback shell: '${user_shell_fallback}";
-            user_shell="${user_shell_fallback}"; 
+            user_shell="${user_shell_fallback}";
         fi
 
         # Create the new user passwordless with specified shell. Create home directory at /home/{user}, assign ownership to user.
-        if [ ! -d "${home_dir}" ]; 
-        then 
+        if [ ! -d "${home_dir}" ];
+        then
             adduser -D -g "${user}" -s "${user_shell}" "${user}";
-            mkdir -p "${home_dir}"; 
+            mkdir -p "${home_dir}";
             chown -R "${user}:${user}" "${home_dir}";
         fi
-        
+
     fi
 
     # Create user .ssh directory if not exists, assign ownership to user.
-    if [ ! -d "${home_dir}/.ssh" ]; 
-    then 
-        mkdir -p "${home_dir}/.ssh"; 
+    if [ ! -d "${home_dir}/.ssh" ];
+    then
+        mkdir -p "${home_dir}/.ssh";
         chown -R "${user}:${user}" "${home_dir}/.ssh";
     fi
-    
+
 
     if [ -z "${no_generate_user_keys}" ];
     then
@@ -54,9 +54,11 @@ run() {
         ## Keysizes: 256, 384, 521
         ssh-keygen -q -b 521 -f "${home_dir}/.ssh/id_ecdsa" -t ecdsa -m RFC4716 -N "${user}";
 
-        echo $(cat "${home_dir}/.ssh/id_ed25519.pub") >> /etc/ssh/authorized_keys;
-        echo $(cat "${home_dir}/.ssh/id_rsa.pub") >> /etc/ssh/authorized_keys;
-        echo $(cat "${home_dir}/.ssh/id_ecdsa.pub") >> /etc/ssh/authorized_keys;
+        {
+            cat "${home_dir}/.ssh/id_ed25519.pub";
+            cat "${home_dir}/.ssh/id_rsa.pub";
+            cat "${home_dir}/.ssh/id_ecdsa.pub";
+        } >> /etc/ssh/authorized_keys;
     fi
 }
 

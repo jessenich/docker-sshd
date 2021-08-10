@@ -13,12 +13,14 @@ RUN apk update && \
     apk add openssh && \
     rm -rf /var/cache/apk/*
 
-COPY resources/etc/ssh/ /etc/ssh/
-COPY resources/tmp/docker-build /tmp/docker-build
+COPY lxfs/etc/ssh/ /etc/ssh/
+COPY lxfs/tmp/docker-build /tmp/docker-build
 
-RUN /tmp/docker-build/conf-ssh.sh
-RUN /tmp/docker-build/conf-ssh-user.sh --username root
-RUN /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}"
+RUN chmod +x /tmp/docker-build/conf-ssh.sh && \
+    chmod +x /tmp/docker-build/conf-ssh-user.sh && \
+    /tmp/docker-build/conf-ssh.sh && \
+    /tmp/docker-build/conf-ssh-user.sh --username root && \
+    /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}"
 
 FROM scratch as artifact
 ARG SSH_USER=

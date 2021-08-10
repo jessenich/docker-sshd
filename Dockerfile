@@ -12,9 +12,9 @@ ENV BASE_IMAGE="${BASE_IMAGE}" \
     SSH_USER_SHELL="${SSH_USER_SHELL}" \
     RUNNING_IN_DOCKER="true"
 
-RUN if [ ! -f "${SSH_USER_SHELL}" ]; then \
+RUN if [ -z "${SSH_USER_SHELL}" ]; then \
         SSH_USER_SHELL="/bin/ash"; \
-    fi \
+    fi && \
     apk update && \
     apk add openssh && \
     rm -rf /var/cache/apk/*

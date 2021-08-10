@@ -57,6 +57,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Make Cache and Output Directories
+        run: |
+          mkdir -p "${PWD}"/{cache,out}/
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -94,4 +98,6 @@ jobs:
           pull: false
           push: false
 
-      - run: ls /var/cache/docker/docker-alpine-sshd_artifact
+      - name: List 'Out' and 'Cache' directory contents
+        run: |
+          ls "$PWD/out" && ls "$PWD/cache";

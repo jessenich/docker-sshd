@@ -474,7 +474,7 @@ zsdoc/data
 
 **/authorized_keys.d/**
 !**/authorized_keys.d/.gitkeep
-!build/**
-
+!build/docker-build*
 !**/tmp/**
 out/**
+!**.gitkeep

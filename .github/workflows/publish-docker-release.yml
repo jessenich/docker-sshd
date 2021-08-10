@@ -102,11 +102,6 @@ jobs:
           file: ./Dockerfile
           target: artifact
           cache-from: "type=local,src=$(PWD)/cache"
-          labels: |
-            "com.keplerdev.alpine-sshd.maintainer: Jesse Nicholson <jesse@keplerdev.com>"
-            "com.keplerdev.alpine-sshd.source-sha": ${{ github.sha }}
-            "com.keplerdev.alpine-sshd.repository.github.url: https://github.com/${{ github.repository }}"
-            "com.keplerdev.alpine-sshd.repository.dockerhub.url: https://dockerhub.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}"
           platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
           build-args: |
             ${{ env.COMMON_ARGS }}

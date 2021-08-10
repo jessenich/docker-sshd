@@ -2,7 +2,12 @@ name: "Publish alpine-sshd Docker Image"
 
 on:
   release:
-    types: [published]
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+      - "*-prerelease*"
 
 jobs:
   build-docker-image:

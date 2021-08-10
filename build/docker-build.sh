@@ -17,9 +17,8 @@ run() {
 
     docker build . \
         --target artifact \
-        --cache-from jessenich91/alpine-sshd:glibc-latest
-        --output type=local,dest=$(PWD)/out/ \
-        --iidfile $(PWD)/artifact_id \
+        --cache-from jessenich91/alpine-sshd:glibc-latest \
+        --output "type=local,dest=$(PWD)/out/" \
         --build-arg "BASE_IMAGE=jessenich91/alpine-zsh" \
         --build-arg "BASE_IMAGE_TAG=glibc-latest" \
         --build-arg "SSH_USER=jesse" \
@@ -36,12 +35,15 @@ main() {
             ;;
             --no-host-ssh-keygen)
                 no_generate_host_keys="true";
+                shift;
             ;;
             --no-user-ssh-keygen)
                 no_generate_user_keys="true";
+                shift;
             ;;
             -d | --debug)
                 debug_conf_script="true";
+                shift;
             ;;
         esac
         shift

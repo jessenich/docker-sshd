@@ -4,7 +4,7 @@ ARG BASE_IMAGE= \
 FROM ${BASE_IMAGE:-jessenich91/alpine-zsh}:"${BASE_IMAGE_TAG:-latest}" as build
 
 ARG SSH_USER= \
-    SSH_USER_SHELL= 
+    SSH_USER_SHELL=
 
 ENV SSH_USER="${SSH_USER:-sshuser}" \
     SSH_USER_SHELL="${SSH_USER_SHELL:-/bin/zsh}"
@@ -18,7 +18,7 @@ COPY resources/tmp/docker-build /tmp/docker-build
 
 RUN /tmp/docker-build/conf-ssh.sh
 RUN /tmp/docker-build/conf-ssh-user.sh --username root
-RUN /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}" 
+RUN /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}"
 
 FROM scratch as artifact
 ARG SSH_USER=
@@ -47,5 +47,4 @@ COPY --from=build "/etc/ssh/ssh_host_ecdsa_key.pub"   "/host_keys/ssh_host_ecdsa
 FROM build as final
 
 EXPOSE 22
-                     nnnnn nnbjbjbjbbjbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 CMD /usr/sbin/sshd -D -e "$@"

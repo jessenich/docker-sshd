@@ -100,5 +100,5 @@ jobs:
 
       - name: List 'Out' and 'Cache' directory contents
         run: |
-          echo "$(ls -a "$PWD/out")"
-          echo "$(ls -a "$PWD/cache)";
+          ls -a "$PWD/out";
+          ls -a "$PWD/cache";

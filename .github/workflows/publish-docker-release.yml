@@ -73,7 +73,7 @@ jobs:
           file: ./Dockerfile
           target: sshd
           labels: ${{ env.LABELS }}
-          cache-to: "type=local,src=$(PWD)/cache"
+          cache-to: "type=local,dest=$(PWD)/cache"
           platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
           build-args: ${{ env.BUILD_ARGS }}
           pull: true

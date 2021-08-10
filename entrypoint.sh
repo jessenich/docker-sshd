@@ -1,4 +1,5 @@
-#!/usr/bin/env zsh
+#!/bin/sh
 
+# shellcheck disable=SC2154
 # do not detach (-D), log to stderr (-e), passthrough other arguments
-exec /usr/sbin/sshd -D -e "$@"
+exec "${SSH_USER_SHELL}" -c /usr/sbin/sshd -D -e "$@"

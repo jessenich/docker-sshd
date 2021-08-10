@@ -1,15 +1,46 @@
 name: "Publish alpine-sshd Docker Image"
 
 on:
-  workflow_dispatch:
   release:
+<<<<<<< HEAD
     types: [published]
 
+=======
+    types: [published, edited, prerelease]
+  push:
+    tags:
+      - v*
+
+env:
+  LABELS: |
+    "maintainer: Jesse Nicholson <jesse@keplerdev.com>"
+    "com.keplerdev.maintainer: Jesse Nicholson <jesse@keplerdev.com>"
+    "com.keplerdev.source.sha": ${{ github.sha }}
+    "com.keplerdev.source.repository.github.url: https://github.com/${{ github.repository }}"
+    "com.keplerdev.registry.dockerhub.url: https://dockerhub.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}"
+    "com.keplerdev.registry.github.url: https://ghcr.io/jessenich/docker-alpine-sshd"
+  COMMON_ARGS: |
+    BASE_IMAGE=jessenich91/alpine-zsh
+    SSH_USER=jessenich
+    SSH_USER_SHELL="/bin/zsh"
+
+>>>>>>> main
 jobs:
   build-docker-image:
     runs-on: "ubuntu-latest"
 
     steps:
+      - name: Preview Postfix
+        if: github.event == 'push'
+        run: |
+          SUB="tag"
+          if [[ "${github.ref}" == *"${SUB}"* ]]; then \
+            REPLACE= \
+            REF="${github.ref}" \
+            POSTFIX=echo "${REF//(refs\/tags\/(v([\d]*){1}.([\d]*){1}(.?)([\d]+)?))/REPLACE}" \
+          fi \
+          echo '::set-output name=TAG_POSTFIX::POSTFIX'
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -75,13 +106,12 @@ jobs:
             "com.keplerdev.alpine-sshd.repository.github.url: https://github.com/${{ github.repository }}"
             "com.keplerdev.alpine-sshd.repository.dockerhub.url: https://dockerhub.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}"
           build-args: |
-            BASE_IMAGE=jessenich91/alpine-zsh
+            ${{ env.COMMON_ARGS }}
             BASE_IMAGE_TAG=latest
             SSH_USER=jessenich
             SSH_USER_SHELL="/bin/zsh"
           outputs: "type=local,dest=$(PWD)/out/"
           pull: true
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
 
       - run: ls /var/cache/docker/docker-alpine-sshd_artifact

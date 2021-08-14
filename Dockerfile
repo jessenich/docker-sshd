@@ -1,35 +1,27 @@
-ARG BASE_IMAGE=jessenich91/alpine-zsh \
-    VARIANT=latest
+ARG VARIANT=latest
 
-FROM ${BASE_IMAGE}:"${VARIANT}" as build
+FROM jessenich91/alpine-zsh:"${VARIANT:-latest}" as build
 
-ARG SSH_USER=sshuser \
-    SSH_USER_SHELL="/bin/zsh"
+ARG USER_SSH_SHELL="/bin/zsh"
 
-ENV BASE_IMAGE="${BASE_IMAGE}" \
-    BASE_IMAGE_TAG="${BASE_IMAGE_TAG}" \
-    SSH_USER="${SSH_USER}" \
-    SSH_USER_SHELL="${SSH_USER_SHELL}" \
+ENV VARIANT="${VARIANT:-latest}" \
+    SSH_USER_SHELL="${SSH_USER_SHELL:-/bin/zsh}" \
     RUNNING_IN_DOCKER="true"
 
-RUN if [ -z "${SSH_USER_SHELL}" ]; then \
-        SSH_USER_SHELL="/bin/ash"; \
-    fi && \
-    apk update && \
-    apk add openssh && \
+RUN apk update && \
+    apk add \
+        openssh && \
     rm -rf /var/cache/apk/*
 
-COPY lxfs/etc/ssh/ /etc/ssh/
-COPY lxfs/tmp/docker-build /tmp/docker-build
+COPY ./lxfs /
 
-RUN chmod +x /tmp/docker-build/conf-ssh.sh && \
-    chmod +x /tmp/docker-build/conf-ssh-user.sh && \
-    /tmp/docker-build/conf-ssh.sh && \
-    /tmp/docker-build/conf-ssh-user.sh --username root && \
-    /tmp/docker-build/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}"
+RUN chmod +x /usr/slib/conf-ssh.sh && \
+    chmod +x /usr/slib/conf-ssh-user.sh && \
+    /usr/slib/conf-ssh.sh && \
+    /usr/slib/conf-ssh-user.sh --username root --user-shell "${SSH_USER_SHELL}"  && \
+    /usr/slib/conf-ssh-user.sh --username "${SSH_USER}" --user-shell "${SSH_USER_SHELL}"
 
 FROM scratch as export_keys
-ARG SSH_USER=
 
 COPY --from=build "/home/${SSH_USER}/.ssh/id_ed25519"     "/user_keys/id_ed_25519"
 COPY --from=build "/home/${SSH_USER}/.ssh/id_ed25519.pub" "/user_keys/id_ed_25519.pub"
@@ -54,7 +46,6 @@ COPY --from=build "/etc/ssh/ssh_host_ecdsa_key.pub"   "/host_keys/ssh_host_ecdsa
 
 FROM build as sshd
 
-WORKDIR /root
-COPY entrypoint.sh entrypoint.sh
+WORKDIR '/home/${USER}'
 EXPOSE 22
-ENTRYPOINT /entrypoint.sh
+CMD /run-sshd.sh

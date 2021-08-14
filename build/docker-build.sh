@@ -5,25 +5,33 @@ no_generate_user_keys= ;
 debug_conf_script= ;
 
 run() {
-    docker build . \
+    tag1="local-latest"
+    tag2="local-sha$(git log -1 --pretty=%h)"
+
+    docker buildx build \
         --target final \
+        --cache-to "type=local,dest=$PWD/cache" \
         --build-arg "BASE_IMAGE=jessenich91/alpine-zsh" \
         --build-arg "BASE_IMAGE_TAG=glibc-latest" \
         --build-arg "SSH_USER=jesse" \
         --build-arg "SSH_USER_SHELL=/bin/zsh" \
         -f Dockerfile \
-        -t jessenich91/alpine-sshd:glibc-latest \
-        -t jessenich91/alpine-sshd:glibc-1.0.0-alpha1
+        -t "jessenich91/alpine-sshd:${tag1}" \
+        -t "jessenich91/alpine-sshd:${tag2}" \
+        --push \
+        .
 
-    docker build . \
+    docker buildx build \
         --target artifact \
-        --cache-from jessenich91/alpine-sshd:glibc-latest \
+        --cache-from "type=local,src=$PWD/cache" \
         --output "type=local,dest=$(PWD)/out/" \
         --build-arg "BASE_IMAGE=jessenich91/alpine-zsh" \
         --build-arg "BASE_IMAGE_TAG=glibc-latest" \
         --build-arg "SSH_USER=jesse" \
         --build-arg "SSH_USER_SHELL=/bin/zsh" \
-        -f Dockerfile
+        -t "jessenich91/alpine-sshd:artifact" \
+        -f Dockerfile \
+        .
 }
 
 main() {

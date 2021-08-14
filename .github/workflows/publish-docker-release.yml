@@ -1,4 +1,4 @@
-name: "Publish alpine-sshd Docker Image"
+name: "Publish Docker Image"
 
 on:
   push:
@@ -9,27 +9,13 @@ on:
 env:
   GHCR_REGISTRY: ghcr.io
   BUILD_ARGS: |
-    BASE_IMAGE=jessenich91/alpine-zsh
     VARIANT=latest
-    SSH_USER=jessenich
-    SSH_USER_SHELL="/bin/zsh"
 
 jobs:
   build-docker-image:
     runs-on: "ubuntu-latest"
 
     steps:
-      - name: Preview Postfix
-        if: github.event == 'push'
-        run: |
-          SUB="tag"
-          if [[ "${github.ref}" == *"${SUB}"* ]]; then \
-            REPLACE= \
-            REF="${github.ref}" \
-            POSTFIX=echo "${REF//(refs\/tags\/(v([\d]*){1}.([\d]*){1}(.?)([\d]+)?))/REPLACE}" \
-          fi \
-          echo '::set-output name=TAG_POSTFIX::POSTFIX'
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -57,10 +43,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Make Cache and Output Directories
-        run: |
-          mkdir -p "${PWD}"/{cache,out}/
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -80,25 +62,28 @@ jobs:
           cache-to: "type=local,dest=$(PWD)/cache"
           platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
           build-args: ${{ env.BUILD_ARGS }}
+          outputs: "type=docker,dest=$(PWD)/out/artifacts.tar"
           pull: true
           push: true
           tags: ${{ steps.meta.outputs.tags }}
 
+      # - name: Extract SSH Keys to Local Directory
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: .
+      #     file: ./Dockerfile
+      #     target: export_keys
+      #     cache-from: "type=local,src=$(PWD)/cache"
+      #     platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
+      #     build-args: ${{ env.BUILD_ARGS }}
+      #     outputs: "type=docker,dest=$(PWD)/out/artifacts.tar"
+      #     pull: false
+      #     push: false
 
-      - name: Extract SSH Keys to Local Directory
-        uses: docker/build-push-action@v2
+      - uses: bacongobbler/azure-blob-storage-upload@v1.2.0
         with:
-          context: .
-          file: ./Dockerfile
-          target: export_keys
-          cache-from: "type=local,src=$(PWD)/cache"
-          platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
-          build-args: ${{ env.BUILD_ARGS }}
-          outputs: "type=local,dest=$(PWD)/out/"
-          pull: false
-          push: false
-
-      - name: List 'Out' and 'Cache' directory contents
-        run: |
-          ls -a "$PWD/out";
-          ls -a "$PWD/cache";
+          source_dir: "$(PWD)/out/"
+          container_name: docker-alpine-sshd-artifacts
+          connection_string: ${{ secrets.STORAGE_CONNECTION_STRING }}
+          extra_args: '--pattern *.tar'
+          sync: false

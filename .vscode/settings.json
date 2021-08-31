@@ -10,5 +10,6 @@
         "keplerdev",
         "keysexport",
         "nodocs"
-    ]
+    ],
+    "cmake.configureOnOpen": false
 }

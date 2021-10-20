@@ -9,8 +9,8 @@
 
 [__GitHub Source__](https://github.com/jessenich/docker-alpine-sshd)
 
-`docker pull ghcr.io/jessenich/docker-alpine-sshd:latest`
+`docker pull ghcr.io/jessenich/sshd:alpine`
 
 [__DockerHub Registry__](https://dockerhub.com/r/jessenich91/alpine-sshd)
 
-`docker pull jessenich91/alpine-sshd:latest`
+`docker pull jessenich91/sshd:alpine`

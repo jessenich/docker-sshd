@@ -11,10 +11,6 @@ run() {
     docker buildx build \
         --target final \
         --cache-to "type=local,dest=$PWD/cache" \
-        --build-arg "BASE_IMAGE=jessenich91/alpine-zsh" \
-        --build-arg "BASE_IMAGE_TAG=glibc-latest" \
-        --build-arg "SSH_USER=jesse" \
-        --build-arg "SSH_USER_SHELL=/bin/zsh" \
         -f Dockerfile \
         -t "jessenich91/alpine-sshd:${tag1}" \
         -t "jessenich91/alpine-sshd:${tag2}" \
@@ -22,13 +18,9 @@ run() {
         .
 
     docker buildx build \
-        --target artifact \
+        --target export_keys \
         --cache-from "type=local,src=$PWD/cache" \
         --output "type=local,dest=$(PWD)/out/" \
-        --build-arg "BASE_IMAGE=jessenich91/alpine-zsh" \
-        --build-arg "BASE_IMAGE_TAG=glibc-latest" \
-        --build-arg "SSH_USER=jesse" \
-        --build-arg "SSH_USER_SHELL=/bin/zsh" \
         -t "jessenich91/alpine-sshd:artifact" \
         -f Dockerfile \
         .

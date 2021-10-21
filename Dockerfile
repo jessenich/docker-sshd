@@ -1,6 +1,6 @@
-ARG VARIANT=latest
+ARG VARIANT=sudo
 
-FROM jessenich91/alpine-zsh:"${VARIANT:-latest}" as build
+FROM jessenich91/alpine:"${VARIANT:-sudo}" as build
 
 ARG USER_SSH_SHELL="/bin/zsh"
 
@@ -9,11 +9,11 @@ ENV VARIANT="${VARIANT:-latest}" \
     RUNNING_IN_DOCKER="true"
 
 RUN apk update && \
-    apk add \
-        openssh && \
-    rm -rf /var/cache/apk/*
+    apk add --update --no-cache \
+        openssh \
+        supervisor
 
-COPY ./lxfs /
+COPY ./rootfs /
 
 RUN chmod +x /usr/slib/conf-ssh.sh && \
     chmod +x /usr/slib/conf-ssh-user.sh && \
@@ -48,4 +48,4 @@ FROM build as sshd
 
 WORKDIR '/home/${USER}'
 EXPOSE 22
-CMD /run-sshd.sh
+ENTRYPOINT [ "/usr/bin/supervisord" ]

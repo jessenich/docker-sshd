@@ -13,29 +13,29 @@ show_usage() {
 
 run() {
     # Create custom directory for user-defined runtime authorized-keys atacahed via docker volume
-    if [ ! -d "/etc/ssh/authorized_keys.d/" ]; 
+    if [ ! -d "/etc/ssh/authorized_keys.d/" ];
     then
-        if -z "${debug_conf_script}"; then echo "Creating /etc/ssh/authorized_keys.d/ directory..."; fi
-        mkdir -p "/etc/ssh/authorized_keys.d/"; 
+        if [ -z "${debug_conf_script}" ]; then echo "Creating /etc/ssh/authorized_keys.d/ directory..."; fi
+        mkdir -p "/etc/ssh/authorized_keys.d/";
     fi
 
     if [ ! -d "/etc/ssh/ssh_config.d/" ];
     then
-        if -z "${debug_conf_script}"; then echo "Creating /etc/ssh/ssh_config.d/ directory..."; fi
-        mkdir -p "/etc/ssh/ssh_config.d/"; 
+        if [ -z "${debug_conf_script}" ]; then echo "Creating /etc/ssh/ssh_config.d/ directory..."; fi
+        mkdir -p "/etc/ssh/ssh_config.d/";
     fi
 
     if [ ! -d "/etc/ssh/sshd_config.d/" ];
     then
-        if -z "${debug_conf_script}"; then echo "Creating /etc/ssh/sshd_config.d/ directory..."; fi
-        mkdir -p "/etc/ssh/sshd_config.d/"; 
+        if [ -z "${debug_conf_script}" ]; then echo "Creating /etc/ssh/sshd_config.d/ directory..."; fi
+        mkdir -p "/etc/ssh/sshd_config.d/";
     fi
 
     # Generate new host keys for each build, eat stderr
-    
-    if [ -z "${no_generate_host_keys}" ]; 
+
+    if [ -z "${no_generate_host_keys}" ];
     then
-        if -z "${debug_conf_script}"; then echo "Generating new host ssh keys with' ssh-keygen -A'..."; fi
+        if [ -z "${debug_conf_script}" ]; then echo "Generating new host ssh keys with' ssh-keygen -A'..."; fi
         ssh-keygen -A;
     fi
 }

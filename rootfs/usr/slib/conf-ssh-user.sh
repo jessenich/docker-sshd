@@ -48,11 +48,11 @@ run() {
     if [ -z "${no_generate_user_keys}" ];
     then
         ## Fixed keysize for ed25519
-        ssh-keygen -q -f "${home_dir}/.ssh/id_ed25519" -t ed25519 -m RFC4716 -N "${user}";
+        ssh-keygen -q -f "${home_dir}/.ssh/id_ed25519" -t ed25519 -m RFC4716 -N "${user}" -C "$user";
         ## Keysizes: 2048, 3072, 4096
-        ssh-keygen -q -b 4096 -f "${home_dir}/.ssh/id_rsa" -t rsa -m RFC4716 -N "${user}";
+        ssh-keygen -q -b 4096 -f "${home_dir}/.ssh/id_rsa" -t rsa -m RFC4716 -N "${user}" -C "$user";
         ## Keysizes: 256, 384, 521
-        ssh-keygen -q -b 521 -f "${home_dir}/.ssh/id_ecdsa" -t ecdsa -m RFC4716 -N "${user}";
+        ssh-keygen -q -b 521 -f "${home_dir}/.ssh/id_ecdsa" -t ecdsa -m RFC4716 -N "${user}" -C "$user";
 
         {
             cat "${home_dir}/.ssh/id_ed25519.pub";

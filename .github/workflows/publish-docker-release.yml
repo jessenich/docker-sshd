@@ -8,8 +8,7 @@ on:
 
 env:
   GHCR_REGISTRY: ghcr.io
-  BUILD_ARGS: |
-    VARIANT=latest
+  BUILD_ARGS: VARIANT=latest
 
 jobs:
   build-docker-image:
@@ -47,25 +46,51 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
             "${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}"
             "${{ env.GHCR_REGISTRY }}/${{ github.repository }}"
           tags: type=semver,pattern={{version}}
 
       - name: Build & Push Latest
+        id: docker_build
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile
           target: sshd
           labels: ${{ env.LABELS }}
-          cache-to: "type=local,dest=$(PWD)/cache"
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
           platforms: linux/arm/v7,linux/arm64/v8,linux/amd64
           build-args: ${{ env.BUILD_ARGS }}
-          outputs: "type=docker,dest=$(PWD)/out/artifacts.tar"
+          outputs: "type=tar,dest=$(PWD)/out/artifacts.tar"
           pull: true
-          push: true
           tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Build & Save Tarball
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          target: sshd
+          labels: ${{ env.LABELS }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          build-args: ${{ env.BUILD_ARGS }}
+          outputs: "type=tar,dest=$(PWD)/out/artifacts.tar"
+          pull: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Extract SSH Keys
+        id: extract_ssh_keys
+        run: |
+          mkdir -p out/ssh-keys
+          tar -xvf out/artifacts.tar -C out/ssh-keys
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
 
       # - name: Extract SSH Keys to Local Directory
       #   uses: docker/build-push-action@v2
@@ -82,7 +107,7 @@ jobs:
 
       - uses: bacongobbler/azure-blob-storage-upload@v1.2.0
         with:
-          source_dir: "$(PWD)/out/"
+          source_dir: "$(PWD)/out/sh-keys"
           container_name: docker-alpine-sshd-artifacts
           connection_string: ${{ secrets.STORAGE_CONNECTION_STRING }}
           extra_args: '--pattern *.tar'

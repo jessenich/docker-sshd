@@ -2,7 +2,7 @@ ARG VARIANT=sudo
 
 FROM jessenich91/alpine:"${VARIANT:-sudo}" as build
 
-ARG USER_SSH_SHELL="/bin/zsh"
+ARG USER_SSH_SHELL="/usr/bin/zsh"
 
 ENV VARIANT="${VARIANT:-latest}" \
     SSH_USER_SHELL="${SSH_USER_SHELL:-/bin/zsh}" \

@@ -54,7 +54,7 @@ jobs:
 
       - name: Build & Push Latest
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -70,7 +70,7 @@ jobs:
 
       - name: Build & Save Tarball
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -93,7 +93,7 @@ jobs:
         run: echo ${{ steps.docker_build.outputs.digest }}
 
       # - name: Extract SSH Keys to Local Directory
-      #   uses: docker/build-push-action@v2
+      #   uses: docker/build-push-action@v3
       #   with:
       #     context: .
       #     file: ./Dockerfile

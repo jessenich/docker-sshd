@@ -105,7 +105,7 @@ jobs:
       #     pull: false
       #     push: false
 
-      - uses: bacongobbler/azure-blob-storage-upload@v1.2.0
+      - uses: bacongobbler/azure-blob-storage-upload@v3.0.0
         with:
           source_dir: "$(PWD)/out/sh-keys"
           container_name: docker-alpine-sshd-artifacts
